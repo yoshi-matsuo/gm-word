@@ -4,8 +4,26 @@ import { useState, useEffect, useCallback } from "react";
 import { vocabulary, Word, Level, levelLabels, levelDescriptions } from "@/data/vocabulary";
 
 const STORAGE_KEY = "gm-word-shown-words";
+
+// 単語の長さに応じてフォントサイズを調整
+const getWordFontSize = (word: string, isQuestion: boolean): string => {
+  const length = word.length;
+  if (isQuestion) {
+    // 質問画面（大きいフォント）
+    if (length <= 8) return "text-5xl";
+    if (length <= 11) return "text-4xl";
+    if (length <= 14) return "text-3xl";
+    return "text-2xl";
+  } else {
+    // 回答画面（やや小さいフォント）
+    if (length <= 8) return "text-4xl";
+    if (length <= 11) return "text-3xl";
+    if (length <= 14) return "text-2xl";
+    return "text-xl";
+  }
+};
 const LEVEL_KEY = "gm-word-level";
-const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
 
 interface ShownWord {
   id: number;
@@ -48,7 +66,7 @@ export default function Home() {
 
     // 1週間以上前のデータを削除
     const filtered = shownWords.filter(
-      (sw) => now - sw.shownAt < ONE_WEEK_MS
+      (sw) => now - sw.shownAt < FIVE_DAYS_MS
     );
 
     // 新しい単語を追加
@@ -65,7 +83,7 @@ export default function Home() {
     // 1週間以内に表示された単語のIDセット
     const recentlyShownIds = new Set(
       shownWords
-        .filter((sw) => now - sw.shownAt < ONE_WEEK_MS)
+        .filter((sw) => now - sw.shownAt < FIVE_DAYS_MS)
         .map((sw) => sw.id)
     );
 
@@ -190,7 +208,7 @@ export default function Home() {
               {levelLabels[selectedLevel]}のすべての単語を学習済みです
             </p>
             <p className="text-slate-500 mb-6">
-              1週間後に単語がリセットされます
+              5日後に単語がリセットされます
             </p>
             <button
               onClick={() => setShowSettings(true)}
@@ -240,7 +258,7 @@ export default function Home() {
             /* 第1画面: 英単語表示 */
             <div className="text-center">
               <div className="py-12">
-                <p className="text-5xl font-bold text-slate-800 tracking-wide">
+                <p className={`${getWordFontSize(currentWord.word, true)} font-bold text-slate-800 tracking-wide break-words`}>
                   {currentWord.word}
                 </p>
               </div>
@@ -257,7 +275,7 @@ export default function Home() {
             <div>
               {/* 単語と発音記号 */}
               <div className="text-center mb-6">
-                <p className="text-4xl font-bold text-slate-800 mb-2">
+                <p className={`${getWordFontSize(currentWord.word, false)} font-bold text-slate-800 mb-2 break-words`}>
                   {currentWord.word}
                 </p>
                 <p className="text-slate-500 text-lg">
